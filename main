@@ -2,7 +2,6 @@ local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local CoreGui = game:GetService("CoreGui")
 local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
 
@@ -36,7 +35,7 @@ local isLocked = false
 local currentTarget = nil
 local rainbowHighlight = nil
 
--- Hàm tìm người chơi ở gần nhất (ngoừi chơi khác)
+-- Hàm tìm người chơi ở gần nhất
 local function getClosestPlayer()
     local closestPlayer = nil
     local shortestDistance = math.huge
@@ -61,7 +60,7 @@ local function getClosestPlayer()
     return closestPlayer
 end
 
--- Hàm tạo hoặc gỡ Highlight 7 màu
+-- Hàm cập nhật Highlight 7 màu
 local function updateRainbowHighlight()
     if isLocked and currentTarget and currentTarget.Character then
         local char = currentTarget.Character
@@ -83,7 +82,7 @@ local function updateRainbowHighlight()
     end
 end
 
--- Xử lý bật / tắt Camlock
+-- Xử lý bật / tắt Camlock bằng nút bấm trên màn hình
 local function toggleCamlock()
     isLocked = not isLocked
     if isLocked then
@@ -93,6 +92,7 @@ local function toggleCamlock()
             ToggleButton.TextColor3 = Color3.fromRGB(80, 255, 80)
         else
             isLocked = false
+            currentTarget = nil
             ToggleButton.Text = "❌ Không thấy mục tiêu!"
             task.wait(1.5)
             ToggleButton.Text = "🔒 Camlock: OFF"
@@ -108,16 +108,9 @@ end
 
 ToggleButton.MouseButton1Click:Connect(toggleCamlock)
 
--- Phím tắt Q để bật/tắt nhanh Camlock
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if not gameProcessed and input.KeyCode == Enum.KeyCode.Q then
-        toggleCamlock()
-    end
-end)
-
--- Hiệu ứng đổi màu 7 màu liên tục cho Highlight và camera lock mượt mà
+-- Vòng lặp cập nhật hiệu ứng 7 màu và khóa camera bám sát mục tiêu đã chọn
 RunService.RenderStepped:Connect(function(dt)
-    -- Hiệu ứng 7 màu (RGB Color Cycle)
+    -- Hiệu ứng đổi màu 7 màu liên tục cho Highlight
     if rainbowHighlight and currentTarget and currentTarget.Character then
         local hue = tick() % 5 / 5
         local rgbColor = Color3.fromHSV(hue, 1, 1)
@@ -125,19 +118,17 @@ RunService.RenderStepped:Connect(function(dt)
         rainbowHighlight.OutlineColor = rgbColor
     end
 
-    -- Thực hiện Camlock bám theo mục tiêu
+    -- Khóa góc nhìn camera vào đúng người đã được chọn từ đầu
     if isLocked and currentTarget and currentTarget.Character then
         local targetChar = currentTarget.Character
         local targetPart = targetChar:FindFirstChild("HumanoidRootPart") or targetChar:FindFirstChild("Head")
         local humanoid = targetChar:FindFirstChildOfClass("Humanoid")
         
         if targetPart and humanoid and humanoid.Health > 0 then
-            -- Khóa góc nhìn camera hướng thẳng vào tâm đối thủ mà không làm giật góc nhìn đột ngột
             local currentCamCFrame = Camera.CFrame
             local targetPosition = targetPart.Position + Vector3.new(0, 0.5, 0)
             Camera.CFrame = CFrame.new(currentCamCFrame.Position, targetPosition)
         else
-            -- Nếu mục tiêu chết hoặc biến mất thì tự động tắt lock
             isLocked = false
             currentTarget = nil
             ToggleButton.Text = "🔒 Camlock: OFF"
