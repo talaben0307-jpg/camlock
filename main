@@ -35,7 +35,10 @@ local isLocked = false
 local currentTarget = nil
 local rainbowHighlight = nil
 
--- Tách biệt hoàn toàn tính năng kéo thả (Draggable) để không bị lỗi nhầm click khi lướt nút
+-- Tốc độ bám cam (Số càng lớn bám càng nhanh, để 1 là mượt sát nút, tăng lên hoặc dùng lerp trực tiếp nếu muốn bắt dính tuyệt đối)
+local CAM_SPEED = 0.85 
+
+-- Xử lý kéo thả nút UI không bị lỗi click
 local dragging, dragStart, startPos
 
 ToggleButton.InputBegan:Connect(function(input)
@@ -106,7 +109,7 @@ local function updateRainbowHighlight()
     end
 end
 
--- Xử lý bật / tắt Camlock độc lập qua nút bấm UI
+-- Xử lý bật / tắt Camlock
 local function toggleCamlock()
     isLocked = not isLocked
     if isLocked then
@@ -132,7 +135,7 @@ end
 
 ToggleButton.Activated:Connect(toggleCamlock)
 
--- Vòng lặp cập nhật hiệu ứng 7 màu và khóa camera bám sát mục tiêu
+-- Vòng lặp tốc độ cao cập nhật camera và hiệu ứng
 RunService.RenderStepped:Connect(function(dt)
     if rainbowHighlight and currentTarget and currentTarget.Character then
         local hue = tick() % 5 / 5
@@ -149,7 +152,10 @@ RunService.RenderStepped:Connect(function(dt)
         if targetPart and humanoid and humanoid.Health > 0 then
             local currentCamCFrame = Camera.CFrame
             local targetPosition = targetPart.Position + Vector3.new(0, 0.5, 0)
-            Camera.CFrame = CFrame.new(currentCamCFrame.Position, targetPosition)
+            
+            -- Khóa camera tốc độ cực cao bám sát từng khung hình
+            local desiredCFrame = CFrame.new(currentCamCFrame.Position, targetPosition)
+            Camera.CFrame = currentCamCFrame:Lerp(desiredCFrame, CAM_SPEED)
         else
             isLocked = false
             currentTarget = nil
