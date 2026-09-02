@@ -12,7 +12,7 @@ if CoreGui:FindFirstChild("JJS_CamlockRainbow") then
 end
 
 -- ==================== CÀI ĐẶT MẶC ĐỊNH ====================
-local ToggleKey = Enum.KeyCode.Q -- Phím tắt mặc định ban đầu
+local ToggleKey = Enum.KeyCode.E -- Đã đổi thành phím E
 local CAM_SPEED = 0.85 
 -- ==========================================================
 
@@ -45,7 +45,7 @@ KeybindButton.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
 KeybindButton.Position = UDim2.new(0, 50, 0, 248)
 KeybindButton.Size = UDim2.new(0, 180, 0, 32)
 KeybindButton.Font = Enum.Font.GothamBold
-KeybindButton.Text = "⌨️ Key: Q"
+KeybindButton.Text = "⌨️ Key: E"
 KeybindButton.TextColor3 = Color3.fromRGB(200, 200, 200)
 KeybindButton.TextSize = 12
 KeybindButton.Draggable = true
