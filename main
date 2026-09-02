@@ -82,7 +82,7 @@ local function updateRainbowHighlight()
     end
 end
 
--- Xử lý bật / tắt Camlock bằng nút bấm trên màn hình
+-- Xử lý bật / tắt Camlock hoàn toàn bằng nút bấm UI (không còn phím tắt Q)
 local function toggleCamlock()
     isLocked = not isLocked
     if isLocked then
