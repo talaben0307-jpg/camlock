@@ -2,7 +2,6 @@ local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local CoreGui = game:GetService("CoreGui")
 local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
 
@@ -11,18 +10,16 @@ if CoreGui:FindFirstChild("JJS_CamlockRainbow") then
     CoreGui.JJS_CamlockRainbow:Destroy()
 end
 
--- ==================== CÀI ĐẶT MẶC ĐỊNH ====================
-local ToggleKey = Enum.KeyCode.E -- Đã đổi thành phím E
+-- ==================== CÀI ĐẶT TỐC ĐỘ ====================
 local CAM_SPEED = 0.85 
 -- ==========================================================
 
--- Tạo giao diện chính
+-- Tạo giao diện chính (chỉ còn 1 nút bấm đơn giản)
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "JJS_CamlockRainbow"
 ScreenGui.Parent = CoreGui
 ScreenGui.ResetOnSpawn = false
 
--- Nút 1: Bật/Tắt Camlock
 local ToggleButton = Instance.new("TextButton")
 ToggleButton.Parent = ScreenGui
 ToggleButton.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
@@ -34,28 +31,11 @@ ToggleButton.TextColor3 = Color3.fromRGB(255, 80, 80)
 ToggleButton.TextSize = 14
 ToggleButton.Draggable = true
 
-local UICorner1 = Instance.new("UICorner")
-UICorner1.CornerRadius = UDim.new(0, 8)
-UICorner1.Parent = ToggleButton
-
--- Nút 2: Đổi Keybind ngay trên màn hình
-local KeybindButton = Instance.new("TextButton")
-KeybindButton.Parent = ScreenGui
-KeybindButton.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
-KeybindButton.Position = UDim2.new(0, 50, 0, 248)
-KeybindButton.Size = UDim2.new(0, 180, 0, 32)
-KeybindButton.Font = Enum.Font.GothamBold
-KeybindButton.Text = "⌨️ Key: E"
-KeybindButton.TextColor3 = Color3.fromRGB(200, 200, 200)
-KeybindButton.TextSize = 12
-KeybindButton.Draggable = true
-
-local UICorner2 = Instance.new("UICorner")
-UICorner2.CornerRadius = UDim.new(0, 8)
-UICorner2.Parent = KeybindButton
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 8)
+UICorner.Parent = ToggleButton
 
 local isLocked = false
-local isWaitingForKey = false
 local currentTarget = nil
 local rainbowHighlight = nil
 
@@ -108,7 +88,6 @@ end
 
 -- Xử lý bật / tắt Camlock
 local function toggleCamlock()
-    if isWaitingForKey then return end
     isLocked = not isLocked
     if isLocked then
         currentTarget = getClosestPlayer()
@@ -132,30 +111,6 @@ local function toggleCamlock()
 end
 
 ToggleButton.MouseButton1Click:Connect(toggleCamlock)
-
--- Bấm vào nút đổi keybind trên màn hình
-KeybindButton.MouseButton1Click:Connect(function()
-    if isWaitingForKey then return end
-    isWaitingForKey = true
-    KeybindButton.Text = "⌨️ Bấm phím mới..."
-    KeybindButton.TextColor3 = Color3.fromRGB(255, 220, 80)
-end)
-
--- Bắt sự kiện bàn phím PC
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if input.UserInputType == Enum.UserInputType.Keyboard then
-        if isWaitingForKey then
-            -- Nhận phím mới từ bàn phím PC
-            ToggleKey = input.KeyCode
-            KeybindButton.Text = "⌨️ Key: " .. ToggleKey.Name
-            KeybindButton.TextColor3 = Color3.fromRGB(200, 200, 200)
-            isWaitingForKey = false
-        elseif ToggleKey and not gameProcessed and input.KeyCode == ToggleKey then
-            -- Phím tắt bật/tắt camlock
-            toggleCamlock()
-        end
-    end
-end)
 
 -- Vòng lặp tốc độ cao cập nhật camera và hiệu ứng
 RunService.RenderStepped:Connect(function(dt)
