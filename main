@@ -11,56 +11,53 @@ if CoreGui:FindFirstChild("JJS_CamlockRainbow") then
     CoreGui.JJS_CamlockRainbow:Destroy()
 end
 
--- Tạo giao diện nút bấm
+-- ==================== CÀI ĐẶT MẶC ĐỊNH ====================
+local ToggleKey = Enum.KeyCode.Q -- Phím tắt mặc định ban đầu
+local CAM_SPEED = 0.85 
+-- ==========================================================
+
+-- Tạo giao diện chính chứa 2 nút
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "JJS_CamlockRainbow"
 ScreenGui.Parent = CoreGui
 ScreenGui.ResetOnSpawn = false
 
+-- Nút 1: Bật/Tắt Camlock
 local ToggleButton = Instance.new("TextButton")
 ToggleButton.Parent = ScreenGui
 ToggleButton.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
 ToggleButton.Position = UDim2.new(0, 50, 0, 200)
-ToggleButton.Size = UDim2.new(0, 180, 0, 45)
+ToggleButton.Size = UDim2.new(0, 180, 0, 42)
 ToggleButton.Font = Enum.Font.GothamBold
 ToggleButton.Text = "🔒 Camlock: OFF"
 ToggleButton.TextColor3 = Color3.fromRGB(255, 80, 80)
 ToggleButton.TextSize = 14
+ToggleButton.Draggable = true
 
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 8)
-UICorner.Parent = ToggleButton
+local UICorner1 = Instance.new("UICorner")
+UICorner1.CornerRadius = UDim.new(0, 8)
+UICorner1.Parent = ToggleButton
+
+-- Nút 2: Đổi Keybind (nằm ngay phía dưới nút Camlock)
+local KeybindButton = Instance.new("TextButton")
+KeybindButton.Parent = ScreenGui
+KeybindButton.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+KeybindButton.Position = UDim2.new(0, 50, 0, 248) -- Nằm ngay dưới nút trên
+KeybindButton.Size = UDim2.new(0, 180, 0, 32)
+KeybindButton.Font = Enum.Font.GothamBold
+KeybindButton.Text = "⌨️ Key: Q"
+KeybindButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+KeybindButton.TextSize = 12
+KeybindButton.Draggable = true
+
+local UICorner2 = Instance.new("UICorner")
+UICorner2.CornerRadius = UDim.new(0, 8)
+UICorner2.Parent = KeybindButton
 
 local isLocked = false
+local isWaitingForKey = false
 local currentTarget = nil
 local rainbowHighlight = nil
-
--- Tốc độ bám cam (Số càng lớn bám càng nhanh, để 1 là mượt sát nút, tăng lên hoặc dùng lerp trực tiếp nếu muốn bắt dính tuyệt đối)
-local CAM_SPEED = 0.85 
-
--- Xử lý kéo thả nút UI không bị lỗi click
-local dragging, dragStart, startPos
-
-ToggleButton.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        dragStart = input.Position
-        startPos = ToggleButton.Position
-        
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
-        end)
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-        local delta = input.Position - dragStart
-        ToggleButton.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
-end)
 
 -- Hàm tìm người chơi ở gần nhất
 local function getClosestPlayer()
@@ -111,6 +108,7 @@ end
 
 -- Xử lý bật / tắt Camlock
 local function toggleCamlock()
+    if isWaitingForKey then return end
     isLocked = not isLocked
     if isLocked then
         currentTarget = getClosestPlayer()
@@ -135,6 +133,30 @@ end
 
 ToggleButton.Activated:Connect(toggleCamlock)
 
+-- Xử lý bấm nút đổi Keybind trên màn hình
+KeybindButton.Activated:Connect(function()
+    if isWaitingForKey then return end
+    isWaitingForKey = true
+    KeybindButton.Text = "⌨️ Bấm phím mới..."
+    KeybindButton.TextColor3 = Color3.fromRGB(255, 220, 80)
+end)
+
+-- Bắt sự kiện bàn phím (để đổi keybind hoặc dùng keybind bật/tắt)
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if input.UserInputType == Enum.UserInputType.Keyboard then
+        if isWaitingForKey then
+            -- Nhận phím mới người dùng vừa bấm
+            ToggleKey = input.KeyCode
+            KeybindButton.Text = "⌨️ Key: " .. ToggleKey.Name
+            KeybindButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+            isWaitingForKey = false
+        elseif ToggleKey and not gameProcessed and input.KeyCode == ToggleKey then
+            -- Phím tắt bật/tắt camlock
+            toggleCamlock()
+        end
+    end
+end)
+
 -- Vòng lặp tốc độ cao cập nhật camera và hiệu ứng
 RunService.RenderStepped:Connect(function(dt)
     if rainbowHighlight and currentTarget and currentTarget.Character then
@@ -153,7 +175,6 @@ RunService.RenderStepped:Connect(function(dt)
             local currentCamCFrame = Camera.CFrame
             local targetPosition = targetPart.Position + Vector3.new(0, 0.5, 0)
             
-            -- Khóa camera tốc độ cực cao bám sát từng khung hình
             local desiredCFrame = CFrame.new(currentCamCFrame.Position, targetPosition)
             Camera.CFrame = currentCamCFrame:Lerp(desiredCFrame, CAM_SPEED)
         else
