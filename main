@@ -16,7 +16,7 @@ local ToggleKey = Enum.KeyCode.Q -- Phím tắt mặc định ban đầu
 local CAM_SPEED = 0.85 
 -- ==========================================================
 
--- Tạo giao diện chính chứa 2 nút
+-- Tạo giao diện chính
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "JJS_CamlockRainbow"
 ScreenGui.Parent = CoreGui
@@ -38,11 +38,11 @@ local UICorner1 = Instance.new("UICorner")
 UICorner1.CornerRadius = UDim.new(0, 8)
 UICorner1.Parent = ToggleButton
 
--- Nút 2: Đổi Keybind (nằm ngay phía dưới nút Camlock)
+-- Nút 2: Đổi Keybind ngay trên màn hình
 local KeybindButton = Instance.new("TextButton")
 KeybindButton.Parent = ScreenGui
 KeybindButton.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
-KeybindButton.Position = UDim2.new(0, 50, 0, 248) -- Nằm ngay dưới nút trên
+KeybindButton.Position = UDim2.new(0, 50, 0, 248)
 KeybindButton.Size = UDim2.new(0, 180, 0, 32)
 KeybindButton.Font = Enum.Font.GothamBold
 KeybindButton.Text = "⌨️ Key: Q"
@@ -131,21 +131,21 @@ local function toggleCamlock()
     updateRainbowHighlight()
 end
 
-ToggleButton.Activated:Connect(toggleCamlock)
+ToggleButton.MouseButton1Click:Connect(toggleCamlock)
 
--- Xử lý bấm nút đổi Keybind trên màn hình
-KeybindButton.Activated:Connect(function()
+-- Bấm vào nút đổi keybind trên màn hình
+KeybindButton.MouseButton1Click:Connect(function()
     if isWaitingForKey then return end
     isWaitingForKey = true
     KeybindButton.Text = "⌨️ Bấm phím mới..."
     KeybindButton.TextColor3 = Color3.fromRGB(255, 220, 80)
 end)
 
--- Bắt sự kiện bàn phím (để đổi keybind hoặc dùng keybind bật/tắt)
+-- Bắt sự kiện bàn phím PC
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if input.UserInputType == Enum.UserInputType.Keyboard then
         if isWaitingForKey then
-            -- Nhận phím mới người dùng vừa bấm
+            -- Nhận phím mới từ bàn phím PC
             ToggleKey = input.KeyCode
             KeybindButton.Text = "⌨️ Key: " .. ToggleKey.Name
             KeybindButton.TextColor3 = Color3.fromRGB(200, 200, 200)
