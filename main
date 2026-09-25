@@ -2,6 +2,7 @@ local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local CoreGui = game:GetService("CoreGui")
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
 
@@ -22,7 +23,7 @@ ToggleButton.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
 ToggleButton.Position = UDim2.new(0, 50, 0, 200)
 ToggleButton.Size = UDim2.new(0, 180, 0, 42)
 ToggleButton.Font = Enum.Font.GothamBold
-ToggleButton.Text = "🔒 Camlock: OFF"
+ToggleButton.Text = "🔒 Camlock: OFF (V)"
 ToggleButton.TextColor3 = Color3.fromRGB(255, 80, 80)
 ToggleButton.TextSize = 14
 ToggleButton.Draggable = true
@@ -92,18 +93,25 @@ local function toggleCamlock()
             currentTarget = nil
             ToggleButton.Text = "❌ Không thấy mục tiêu!"
             task.wait(1.5)
-            ToggleButton.Text = "🔒 Camlock: OFF"
+            ToggleButton.Text = "🔒 Camlock: OFF (V)"
             ToggleButton.TextColor3 = Color3.fromRGB(255, 80, 80)
         end
     else
         currentTarget = nil
-        ToggleButton.Text = "🔒 Camlock: OFF"
+        ToggleButton.Text = "🔒 Camlock: OFF (V)"
         ToggleButton.TextColor3 = Color3.fromRGB(255, 80, 80)
     end
     updateRainbowHighlight()
 end
 
 ToggleButton.MouseButton1Click:Connect(toggleCamlock)
+
+-- Thêm tính năng bấm phím V để bật/tắt
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed and input.KeyCode == Enum.KeyCode.V then
+        toggleCamlock()
+    end
+end)
 
 RunService.RenderStepped:Connect(function(dt)
     if rainbowHighlight and currentTarget and currentTarget.Character then
@@ -127,7 +135,7 @@ RunService.RenderStepped:Connect(function(dt)
         else
             isLocked = false
             currentTarget = nil
-            ToggleButton.Text = "🔒 Camlock: OFF"
+            ToggleButton.Text = "🔒 Camlock: OFF (V)"
             ToggleButton.TextColor3 = Color3.fromRGB(255, 80, 80)
             updateRainbowHighlight()
         end
