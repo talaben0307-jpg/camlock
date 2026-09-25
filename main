@@ -106,7 +106,7 @@ end
 
 ToggleButton.MouseButton1Click:Connect(toggleCamlock)
 
--- Thêm tính năng bấm phím V để bật/tắt
+-- Phím tắt V để bật/tắt
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if not gameProcessed and input.KeyCode == Enum.KeyCode.V then
         toggleCamlock()
